@@ -1,31 +1,34 @@
+package Part2;
+
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Friend extends Thread {
+public class Friend2 extends Thread {
 
-	private BlockingQueue<Friend> FriendList;
-	private LinkedBlockingQueue<Friend> reportedPlan;
-	private LinkedBlockingQueue<Boolean> MajorityPlanForOneFriend;
-	private LinkedBlockingQueue<Boolean> finalMajorPlan;
-	private boolean currentThreadPlan;
+	private BlockingQueue<Friend2> FriendList;
+	private LinkedBlockingQueue<Integer> reportedPlan;
+	private LinkedBlockingQueue<Integer> MajorityPlanForOneFriend;
+	private LinkedBlockingQueue<Integer> finalMajorPlan;
+	private int currentThreadPlan;
 	public boolean sendReply = false;
 	public long replyWaitingTime = 10000;
 	public long receivedReplyWaitingTime = 10000;
 	public boolean sendReceived = false;
 	public boolean MajorityReceived = false;
-	private boolean reported = false;
-	private boolean decidePlan = true; // default to stay indoor if there is a draw
+//	private boolean reported = false;
+//	private boolean decidePlan = true; // default to stay indoor if there is a draw
 
 	private int inside;
 	private int outside;
 	private String finalPlanDecided;
 	private String finalPlanDecidedForAll;
-	private LinkedBlockingQueue<Friend> replies;
+	int[] replies;
 
-	public Friend(BlockingQueue<Friend> friends, int numberFriends, boolean choice) {
+	public Friend2(BlockingQueue<Friend2> friends, int numberFriends, int choice) {
 		this.FriendList = friends;
-		replies = new LinkedBlockingQueue<>(20); //
+		replies = new int[4]; //
 		reportedPlan = new LinkedBlockingQueue<>(100); //
 		MajorityPlanForOneFriend = new LinkedBlockingQueue<>(100);
 		finalMajorPlan = new LinkedBlockingQueue<>(100);
@@ -33,21 +36,34 @@ public class Friend extends Thread {
 		// will be outside
 		this.currentThreadPlan = choice;
 
+		setArraytoZero(replies);
+
 	}
 
-	public boolean getRandomReply() {
-		Random random = new Random();
-		return random.nextBoolean();
+	private void setArraytoZero(int[] replies2) {
+		for (int i = 0; i < 4; i++) {
+			replies2[i] = 0;
+		}
+	}
+
+//	public boolean getRandomReply() {
+//		Random random = new Random();
+//		return random.nextBoolean();
+//	}
+
+	// randomly stop thread from sending replies
+	public void RandomlyStopfriend() {
+
 	}
 
 	public void run() {
 
 //		currentThreadPlan = getRandomReply(); // true will be inside and false will be outside
 
-		System.out.println(this + " CURRENT PLAN " + currentThreadPlan);
+		System.out.println(this.getName() + " CURRENT PLAN " + currentThreadPlan);
 
 		if (sendReply == false) {
-			System.out.println(this + " SEND REPLIES TO FRIENDS");
+			System.out.println(this.getName() + " SEND REPLIES TO FRIENDS");
 			SendReplyToOther();
 			sendReply = true;
 		}
@@ -62,7 +78,7 @@ public class Friend extends Thread {
 
 		waitForReceivedRepliesOrTimer();
 
-		System.out.println(this + "- DONE WAITING FOR RECEIVED REPLIES...");
+		System.out.println(this.getName() + "- DONE WAITING FOR RECEIVED REPLIES...");
 
 		// First vote
 		firstVote();
@@ -79,21 +95,26 @@ public class Friend extends Thread {
 
 		finalPlanForAllFriends();
 
-
 		System.out.println();
 
-		// System.out.println("( "+ this + ")( REPLIES RECIEVED FROM ):" + replies);
+		// System.out.println(" (" + this.getName() + ")(REPLIES RECIEVED):" + replies);
+		// // Array with replies from
+		// friends
 
-		// System.out.println("( "+ this + ") ( FINAL PLAN FOR ME (FRIEND REPLIES + MY
-		// REPLY + REPORTED REPLIES ): " + finalPlanDecided);
+//		System.out.println("( " + this.getName() + ") (FINAL PLAN FOR ME (FRIEND REPLIES + MYREPLY + REPORTED REPLIES ): " + MajorityPlanForOneFriend);
+//
+//		 System.out.println(" ("+ this.getName() + ") (FINAL PLAN FOR ME (FRIEND REPLIES + MYREPLY + REPORTED REPLIES ): " + finalPlanDecided+"<-------------------");
+//
+//		 System.out.println();
+//
+//		 System.out.println();
 
-		System.out.println();
+		 System.out.println(this.getName() + "(ALL FRIENDS FINAL PLAN ): "
+		  +finalMajorPlan); // Array with final true and false values
 
-		System.out.println(this + "(ALL FRIENDS FINAL PLAN ---> ):  " + finalMajorPlan);
+		  System.out.println(" FINAL----------> "+this.getName() + "(ALL FRIENDS FINALPLAN ):---> " + finalPlanDecidedForAll);
 
-		System.out.println(this + "(ALL FRIENDS FINAL PLAN --> ):  " + finalPlanDecidedForAll);
-
-		System.out.println();
+		 System.out.println();
 
 		return;
 	}
@@ -103,12 +124,13 @@ public class Friend extends Thread {
 		outside = 0;
 		inside = 0;
 
-		for (Boolean finalVote : MajorityPlanForOneFriend) {
-			if (finalVote == false) {
-				outside++;
-			} else {
+		for (Integer finalVote : MajorityPlanForOneFriend) {
+			if (finalVote == 1) {
 				inside++;
 			}
+			if (finalVote == 2) {
+				outside++;
+			} 
 		}
 		if (outside > inside) {
 			finalPlanDecided = "OUTSIDE";
@@ -121,11 +143,12 @@ public class Friend extends Thread {
 	private void finalPlanForAllFriends() {
 		outside = 0;
 		inside = 0;
-		for (Boolean finalVote : finalMajorPlan) {
-			if (finalVote == false) {
-				outside++;
-			} else {
+		for (Integer finalVote : finalMajorPlan) {
+			if (finalVote == 1) {
 				inside++;
+			}
+			if (finalVote == 2) {
+				outside++;
 			}
 		}
 		if (outside > inside) {
@@ -135,23 +158,30 @@ public class Friend extends Thread {
 		}
 	}
 
-	// first round 
+	// first round
 	private void firstVote() {
 		getMajorityOutOfReplies(replies); // get majority for this friend
-		getMajorityOutOfReplies(reportedPlan);
+		getMajorityOutOfReplies2(reportedPlan);
 
 	}
 
-	private void getMajorityOutOfReplies(LinkedBlockingQueue<Friend> replies2) {
-		for (Friend friendReplies : replies2) {
-			MajorityPlanForOneFriend.add(friendReplies.currentThreadPlan);
+	private void getMajorityOutOfReplies(int[] replies2) {
+		for (Integer friendReplies : replies2) {
+			MajorityPlanForOneFriend.add(friendReplies);
+
+		}
+
+	}
+	private void getMajorityOutOfReplies2(LinkedBlockingQueue<Integer> reportedPlan2) {
+		for (Integer friendReplies : reportedPlan2) {
+			MajorityPlanForOneFriend.add(friendReplies);
 
 		}
 
 	}
 
 	private void MajorityPlanForAllFriends() {
-		for (Friend friend : FriendList) {
+		for (Friend2 friend : FriendList) {
 			finalMajorPlan.addAll(friend.MajorityPlanForOneFriend);
 
 		}
@@ -165,8 +195,8 @@ public class Friend extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend friend : FriendList) {
-				if (friend != this) { // don't send replies to self
+			for (Friend2 friend : FriendList) {
+				if (friend != this) {
 					allFriendsDone = allFriendsDone && friend.sendReply;
 				}
 			}
@@ -198,7 +228,7 @@ public class Friend extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend friend : FriendList) { // verify if all friends have send replies
+			for (Friend2 friend : FriendList) { // verify if all friends have send replies
 				if (friend != this) { // don't send replies to self
 					allFriendsDone = allFriendsDone && friend.sendReceived;
 				}
@@ -232,7 +262,7 @@ public class Friend extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend friend : FriendList) { // verify if all friends have send replies
+			for (Friend2 friend : FriendList) { // verify if all friends have send replies
 				if (friend != this) { // don't send replies to self
 					allFriendsDone = allFriendsDone && friend.MajorityReceived;
 				}
@@ -260,26 +290,40 @@ public class Friend extends Thread {
 
 	private void reportReceivedReplies() {
 
-		for (Friend friend : FriendList) {
-			if (friend != this) { // don't send replies to self
-				for (Friend friendReplies : replies) {
-					if (friend != friendReplies) { // dont send the threads own decided plan
-						// System.out.println(this + ": - " + friend + " receiving replies from " +
-						// friendReplies);
-						friend.reportedPlan.add(friendReplies); // send reported plan received to other friends
-						// System.out.println("Send replies from " + friendReplies + " to " + friend);
+		for (Friend2 friend : FriendList) {
+			if (friend != this) {
+				for (int i = 0; i < replies.length; i++) {
+					if ((Integer.parseInt(friend.getName()) != i) && (replies[i] !=0)){
+						friend.reportedPlan.add(replies[i]); // send reported plan received to
+																// other friends
+						System.out.println(replies[i]+ " Send replies from " + this.getName() + " to " + friend.getName());
 
 					}
 				}
 			}
 		}
+
 	}
 
-	//first round sending replies to all generals
+
+
+	// first round sending replies to all generals
 	private void SendReplyToOther() {
-		for (Friend friend : FriendList) {
+		for (Friend2 friend : FriendList) {
 			if (friend != this) {
-				friend.AddToRepliesList(this); // send the current thread to the other threads and add the current
+
+//				if (this.getName() == "Ally") { // -----------------------> Ally is sending randomly different replies
+//												// to friends
+//					currentThreadPlan = getRandomReply();
+//					System.out.println();
+//
+//					System.out.println("++++++++++++ Ally will send random true/false reply :  " + currentThreadPlan + " to friend :"
+//							+ friend.getName());
+//					System.out.println();
+//				}
+
+				friend.AddToRepliesList(this); // send the current thread to the other threads and add
+												// the current
 												// thread to their replies list
 			}
 		}
@@ -287,8 +331,23 @@ public class Friend extends Thread {
 	}
 
 // adding thread to the other threads replies list
-	private void AddToRepliesList(Friend friend) {
-		replies.add(friend);
+	private void AddToRepliesList(Friend2 friend2) {
+		if (friend2.getName() == "0") {
+			replies[0] = friend2.currentThreadPlan;
+
+		}
+		if (friend2.getName() == "1") {
+			replies[1] = friend2.currentThreadPlan;
+
+		}
+		if (friend2.getName() == "2") {
+			replies[2] = friend2.currentThreadPlan;
+
+		}
+		if (friend2.getName() == "3") {
+			replies[3] = friend2.currentThreadPlan;
+
+		}
 
 	}
 
