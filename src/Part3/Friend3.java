@@ -1,13 +1,13 @@
-package Part2;
+package Part3;
 
 import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Friend2 extends Thread {
+public class Friend3 extends Thread {
 
-	private BlockingQueue<Friend2> FriendList;
+	private BlockingQueue<Friend3> FriendList;
 	private LinkedBlockingQueue<Integer> reportedPlan;
 	private LinkedBlockingQueue<Integer> MajorityPlanForOneFriend;
 	private LinkedBlockingQueue<Integer> finalMajorPlan;
@@ -26,7 +26,7 @@ public class Friend2 extends Thread {
 	private String finalPlanDecidedForAll;
 	int[] replies;
 
-	public Friend2(BlockingQueue<Friend2> friends, int numberFriends, int choice) {
+	public Friend3(BlockingQueue<Friend3> friends, int numberFriends, int choice) {
 		this.FriendList = friends;
 		replies = new int[4]; //
 		reportedPlan = new LinkedBlockingQueue<>(100); //
@@ -46,38 +46,29 @@ public class Friend2 extends Thread {
 		}
 	}
 
+//	public boolean getRandomReply() {
+//		Random random = new Random();
+//		return random.nextBoolean();
+//	}
+
 	// randomly stop thread from sending replies
-	public void RandomlyStop() {
-		Random random = new Random();
-		int rand = 0;
-		while (currentThreadPlan != 0) {
-			rand = random.nextInt(2);
-
-			if (rand == 0) {
-				currentThreadPlan = 0;
-				
-
-			} else {
-				break;
-			}
-		}
+	public void RandomlyStopfriend() {
 
 	}
 
-	// ----------------------------------------------------------run-----------------------------------------------------------
 	public void run() {
 
 //		currentThreadPlan = getRandomReply(); // true will be inside and false will be outside
 
-		System.out.println("Friend "+this.getName() + " CURRENT PLAN " + currentThreadPlan);
+		System.out.println(this.getName() + " CURRENT PLAN " + currentThreadPlan);
 
 		if (sendReply == false) {
-			System.out.println("Friend "+this.getName() + " SEND REPLIES TO FRIENDS");
+			System.out.println(this.getName() + " SEND REPLY TO FRIENDS");
 			SendReplyToOther();
 			sendReply = true;
 		}
 
-
+		// System.out.println(this + " - WAITING FOR REPLIES...");
 		waitForRepliesOrTimer();
 
 		// second round
@@ -104,11 +95,6 @@ public class Friend2 extends Thread {
 
 		finalPlanForAllFriends();
 
-		System.out.println("///////// Friend " + this.getName() + " CURRENT PLAN " + currentThreadPlan + " /////////");
-
-		// =================================================================================================
-		// Output of friends results
-		// =================================================================================================
 		System.out.println();
 
 		// System.out.println(" (" + this.getName() + ")(REPLIES RECIEVED):" + replies);
@@ -123,15 +109,12 @@ public class Friend2 extends Thread {
 //
 //		 System.out.println();
 
-		System.out.println("FRIEND" + this.getName() + "(ALL FRIENDS FINAL PLAN ): " + finalMajorPlan); // Array with
-																										// final true
-																										// and false
-																										// values
+		 System.out.println("FRIEND "+this.getName() + " (ALL FRIENDS FINAL PLAN ): "
+		  +finalMajorPlan); // Array with final true and false values
 
-		System.out.println(" FINAL----------> FRIEND" + this.getName() + "(ALL FRIENDS FINALPLAN ):---> "
-				+ finalPlanDecidedForAll);
+		  System.out.println(" FINAL----------> "+this.getName() + " (ALL FRIENDS FINALPLAN ):---> " + finalPlanDecidedForAll);
 
-		System.out.println();
+		 System.out.println();
 
 		return;
 	}
@@ -147,7 +130,7 @@ public class Friend2 extends Thread {
 			}
 			if (finalVote == 2) {
 				outside++;
-			}
+			} 
 		}
 		if (outside > inside) {
 			finalPlanDecided = "OUTSIDE";
@@ -189,7 +172,6 @@ public class Friend2 extends Thread {
 		}
 
 	}
-
 	private void getMajorityOutOfReplies2(LinkedBlockingQueue<Integer> reportedPlan2) {
 		for (Integer friendReplies : reportedPlan2) {
 			MajorityPlanForOneFriend.add(friendReplies);
@@ -199,7 +181,7 @@ public class Friend2 extends Thread {
 	}
 
 	private void MajorityPlanForAllFriends() {
-		for (Friend2 friend : FriendList) {
+		for (Friend3 friend : FriendList) {
 			finalMajorPlan.addAll(friend.MajorityPlanForOneFriend);
 
 		}
@@ -213,7 +195,7 @@ public class Friend2 extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend2 friend : FriendList) {
+			for (Friend3 friend : FriendList) {
 				if (friend != this) {
 					allFriendsDone = allFriendsDone && friend.sendReply;
 				}
@@ -246,7 +228,7 @@ public class Friend2 extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend2 friend : FriendList) { // verify if all friends have send replies
+			for (Friend3 friend : FriendList) { // verify if all friends have send replies
 				if (friend != this) { // don't send replies to self
 					allFriendsDone = allFriendsDone && friend.sendReceived;
 				}
@@ -280,7 +262,7 @@ public class Friend2 extends Thread {
 		while (true) {
 			boolean allFriendsDone = true;
 
-			for (Friend2 friend : FriendList) { // verify if all friends have send replies
+			for (Friend3 friend : FriendList) { // verify if all friends have send replies
 				if (friend != this) { // don't send replies to self
 					allFriendsDone = allFriendsDone && friend.MajorityReceived;
 				}
@@ -308,58 +290,49 @@ public class Friend2 extends Thread {
 
 	private void reportReceivedReplies() {
 
-		if (currentThreadPlan != 0) {
+		for (Friend3 friend : FriendList) {
+			if (friend != this) {
+				for (int i = 0; i < replies.length; i++) {
+					if ((Integer.parseInt(friend.getName()) != i) && (replies[i] !=0)){
+						friend.reportedPlan.add(replies[i]); // send reported plan received to
+																// other friends
+						System.out.println("FRIEND " + this.getName() + " IS REPORTING FRIEND "+i+ "'S REPLY OF "+replies[i]+ " TO FREIND " +friend.getName());
+						
 
-			for (Friend2 friend : FriendList) {
-				if (friend != this)// if friend plan is 0 it means the thread has failed
-					for (int i = 0; i < replies.length; i++) { // i is the reply 1 or 2 and the position is the friend,
-																// position 0 is friend 0
-						if ((Integer.parseInt(friend.getName()) != i) && (replies[i] != 0)) {
-							friend.reportedPlan.add(replies[i]); // send reported plan received to
-																	// other friends
-							System.out.println("Friend " + this.getName() + " reports to friend " + friend.getName()
-									+ " what friend " + i + " reply was " + replies[i]);
-
-						}
 					}
-
+				}
 			}
 		}
+
 	}
 
-	// ********************************************
-	// first round sending replies to all generals
-	// ********************************************
 
+
+	// first round sending replies to all generals
 	private void SendReplyToOther() {
-		for (Friend2 friend : FriendList) {
+		for (Friend3 friend : FriendList) {
 			if (friend != this) {
 
-				if (this.getName() == "0") { // -----------------------> Friend 0 is the traitor stops randomly sending
-												// plan by sending 0
-					RandomlyStop(); //determines when friend will stop sending messages
-
-					System.out.println("++++++++++++ Friend 0 will stop randomly : his curent thread plan is "
-							+ currentThreadPlan + " to friend :" + friend.getName());
-
-					// currentThreadPlan = getRandomReply();
-
-				}
+//				if (this.getName() == "Ally") { // -----------------------> Ally is sending randomly different replies
+//												// to friends
+//					currentThreadPlan = getRandomReply();
+//					System.out.println();
+//
+//					System.out.println("++++++++++++ Ally will send random true/false reply :  " + currentThreadPlan + " to friend :"
+//							+ friend.getName());
+//					System.out.println();
+//				}
 
 				friend.AddToRepliesList(this); // send the current thread to the other threads and add
 												// the current
 												// thread to their replies list
-
-				System.out.println(this.getName() + "************** is sending his plan " + currentThreadPlan
-						+ " to friend :" + friend.getName());
-
 			}
 		}
 
 	}
 
-	// adding thread to the other threads replies list
-	private void AddToRepliesList(Friend2 friend2) {
+// adding thread to the other threads replies list
+	private void AddToRepliesList(Friend3 friend2) {
 		if (friend2.getName() == "0") {
 			replies[0] = friend2.currentThreadPlan;
 
