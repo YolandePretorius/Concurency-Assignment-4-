@@ -134,7 +134,7 @@ public class Friend2 extends Thread {
 		System.out.println();
 
 		return;
-	}
+	}//--------------------------------------------------run ends-------------------------------------------------------
 
 	// get the majority votes for one friend
 	private void finalPlanForOneFriend() {
@@ -306,6 +306,8 @@ public class Friend2 extends Thread {
 
 	}
 
+	
+	// reporting replies to other friends
 	private void reportReceivedReplies() {
 
 		if (currentThreadPlan != 0) {

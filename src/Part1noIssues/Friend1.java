@@ -308,20 +308,12 @@ public class Friend1 extends Thread {
 
 
 
+	// ********************************************
 	// first round sending replies to all generals
+	// ********************************************
 	private void SendReplyToOther() {
 		for (Friend1 friend : FriendList) {
 			if (friend != this) {
-
-//				if (this.getName() == "Ally") { // -----------------------> Ally is sending randomly different replies
-//												// to friends
-//					currentThreadPlan = getRandomReply();
-//					System.out.println();
-//
-//					System.out.println("++++++++++++ Ally will send random true/false reply :  " + currentThreadPlan + " to friend :"
-//							+ friend.getName());
-//					System.out.println();
-//				}
 
 				friend.AddToRepliesList(this); // send the current thread to the other threads and add
 												// the current
